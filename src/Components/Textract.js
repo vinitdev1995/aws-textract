@@ -227,7 +227,7 @@ export default class Textract extends Component {
             if(rawText === "words" && searchRawText){
                 console.log(words, options)
                 words = new Fuse(words, options)
-                words.search(searchRawText);
+                words = words.search(searchRawText);
             }
         }
 
