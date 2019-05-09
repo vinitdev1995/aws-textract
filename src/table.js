@@ -6,6 +6,11 @@ import axios from 'axios';
 
 const S3BUCKET= "munivisor-docs-dev"
 
+const TABS = [
+    {name: "row-text", label: "Raw Text"},
+    {name: "tables", label: "Tables"},
+]
+
 export default class Table extends Component {
     constructor(props) {
         super(props)
@@ -13,7 +18,8 @@ export default class Table extends Component {
             tableData: {},
             file: {},
             selectedFile: null,
-            isLoading: false
+            isLoading: false,
+            activeTab: "row-text"
         }
     }
 
@@ -23,14 +29,6 @@ export default class Table extends Component {
             reader.onerror = () => { reader.abort(); reject(new Error("Error parsing file"));}
             reader.readAsDataURL(file);
             reader.onload = function () {
-
-                //This will result in an array that will be recognized by C#.NET WebApi as a byte[]
-                // let bytes = Array.from(new Uint8Array(this.result));
-
-                //if you want the base64encoded file you would use the below line:
-                // let base64StringFile = btoa(bytes.map((item) => String.fromCharCode(item)).join(""));
-                console.log("base64String ==>", reader.result)
-                //Resolve the promise with your custom file structure
                 resolve({
                     // bytes: bytes,
                     base64StringFile: reader.result,
@@ -39,7 +37,6 @@ export default class Table extends Component {
                     originalFile: file
                 });
             }
-            // reader.readAsArrayBuffer(file);
         });
     }
 
@@ -76,10 +73,8 @@ export default class Table extends Component {
         xhr.setRequestHeader("Content-Type", file.type)
         if (tags) {
             console.log("No tagging required any more")
-            // xhr.setRequestHeader("x-amz-tagging", qs.stringify(tags))
         }
         xhr.onload = async () => {
-            // console.log("readyState : ", xhr.readyState)
             if (xhr.status === 200) {
                 this.onUpload(file, fileName)
             }
@@ -92,18 +87,6 @@ export default class Table extends Component {
 
     onUpload = async (file, fileName) => {
         const base64Obj = await this.getBase64(file)
-        /*
-        const file = event.target.files[0]
-        const base64Obj = await this.getBase64(file)
-        let fileName = file.name
-        const extnIdx = fileName.lastIndexOf(".")
-        if (extnIdx > -1) {
-            fileName = `${fileName.substr(
-                0,
-                extnIdx
-            )}_${new Date().getTime()}${fileName.substr(extnIdx)}`
-        }
-        */
         const params = {
             "Document":{
                 "S3Object":{
@@ -117,7 +100,6 @@ export default class Table extends Component {
                 "FORMS"
             ]
         }
-        // console.log(base64Obj)
         axios.post('http://localhost:8000/getAwsTextract', params)
             .then(response => {
                 const res = (response && response.data && response.data.data) || {}
@@ -129,35 +111,6 @@ export default class Table extends Component {
             }).catch(error => {
                 console.log(error);
             })
-    }
-
-    onFileSelect = (event) => {
-        if(event.target.files.length){
-            const file = event.target.files[0]
-            if((file && file.type) === "image/png" || (file && file.type) === "image/jpeg" && (file && file.size) < 5000000){
-                // const base64Obj = await this.getBase64(file)
-                // const buff = Buffer.from(base64Obj.base64StringFile, 'base64')
-                // const uintArray = new Uint8Array(buff)
-                // const buffer = await this.s2ab(file)
-                let fileName = file.name
-                const extnIdx = fileName.lastIndexOf(".")
-                if (extnIdx > -1) {
-                    fileName = `${fileName.substr(
-                        0,
-                        extnIdx
-                    )}_${new Date().getTime()}${fileName.substr(extnIdx)}`
-                }
-                this.uploadWithSignedUrl(file,  fileName)
-                this.setState({
-                    errorValidFile: "",
-                    isLoading: true,
-                })
-            }else {
-                this.setState({
-                    errorValidFile: "Your document must be a .jpeg or .png. It must be no larger than 5MB.",
-                })
-            }
-        }
     }
 
     onSelect = (event) => {
@@ -223,16 +176,10 @@ export default class Table extends Component {
                 }
             })
 
-            table.cols = table.cells.reduce(function(prev, current) {
-                return (prev.ColumnIndex > current.ColumnIndex) ? prev.ColumnIndex : current.ColumnIndex
-            })
-            table.rows = table.cells.reduce(function(prev, current) {
-                return (prev.RowIndex > current.RowIndex) ? prev.RowIndex : current.RowIndex
-            })
+            table.cols = table.cells.reduce((prev, current) => (prev.ColumnIndex > current.ColumnIndex) ? prev.ColumnIndex : current.ColumnIndex)
+            table.rows = table.cells.reduce((prev, current) => (prev.RowIndex > current.RowIndex) ? prev.RowIndex : current.RowIndex)
         })
         console.log(tables)
-
-
         this.setState({
             tables,
             lines,
@@ -240,9 +187,15 @@ export default class Table extends Component {
         })
     }
 
+    onTab = (e) => {
+        this.setState({
+            activeTab: e.target.name
+        })
+    }
+
     render() {
         console.log("tableData", this.state.tableData)
-        const {file,selectedFile, isLoading, errorValidFile, tables, lines, words} = this.state
+        const {file,selectedFile, activeTab, isLoading, errorValidFile, tables, lines, words} = this.state
         const table = (tables && tables.length && tables[0]) || {}
         const tableCells = (tables && tables.length && tables[0].cells) || []
         const columns = []
@@ -290,45 +243,84 @@ export default class Table extends Component {
                                 </div>
                                 : null
                             }
-                            {/* <Input type="file" onChange={this.onFileSelect} name="file"/> */}
                         </Card>
                     </div>
                     <div className="col-sm-6">
-                        <Pagination size="sm" aria-label="Page navigation example">
-                            <PaginationItem>
-                                <PaginationLink first href="#"/>
-                            </PaginationItem>
-                            <PaginationItem>
-                                <PaginationLink previous href="#"/>
-                            </PaginationItem>
-                            <PaginationItem>
-                                <PaginationLink href="#">
-                                    1
-                                </PaginationLink>
-                            </PaginationItem>
-                            <PaginationItem>
-                                <PaginationLink href="#">
-                                    2
-                                </PaginationLink>
-                            </PaginationItem>
-                            <PaginationItem>
-                                <PaginationLink href="#">
-                                    3
-                                </PaginationLink>
-                            </PaginationItem>
-                            <PaginationItem>
-                                <PaginationLink next href="#"/>
-                            </PaginationItem>
-                            <PaginationItem>
-                                <PaginationLink last href="#"/>
-                            </PaginationItem>
-                        </Pagination>
-                        <ReactTable
-                            data={data}
-                            columns={columns}
-                            minRows={2}
-                            className="-striped -highlight is-bordered"
-                        />
+                        <Card className="p-2">
+                            <div className="row p-2">
+                                <div className="col-sm-12 mt-2">
+                                    <div className="input-group">
+                                        <div className="input-group-prepend">
+                                            <label className="input-group-text">
+                                                <i className="fas fa-search" />
+                                            </label>
+                                        </div>
+                                        <input type="text" aria-label="Search text" className="form-control" placeholder="Type here to search"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <nav>
+                                <div className="nav nav-tabs" id="nav-tab" role="tablist">
+                                    {
+                                        TABS.map(tab => (
+                                            <a className={`nav-item nav-link ${activeTab === tab.name ? "active" : ""}`}
+                                               name={tab.name}
+                                               onClick={this.onTab}
+                                               aria-selected={activeTab === tab.name}>
+                                                {tab.label}
+                                            </a>
+                                        ))
+                                    }
+                                </div>
+                            </nav>
+                            <div className="tab-content" id="nav-tabContent">
+                                <div className={`tab-pane fade ${activeTab === "row-text" ? "show active" : ""}`} >Raw Text</div>
+                                <div className={`tab-pane fade ${activeTab === "tables" ? "show active" : ""}`}>
+                                    { columns ?
+                                        <div className="row p-2">
+                                            <div className="col-sm-12 mt-2">
+                                                <Pagination size="sm" aria-label="Page navigation example">
+                                                    <PaginationItem>
+                                                        <PaginationLink first href="#"/>
+                                                    </PaginationItem>
+                                                    <PaginationItem>
+                                                        <PaginationLink previous href="#"/>
+                                                    </PaginationItem>
+                                                    <PaginationItem>
+                                                        <PaginationLink href="#">
+                                                            1
+                                                        </PaginationLink>
+                                                    </PaginationItem>
+                                                    <PaginationItem>
+                                                        <PaginationLink href="#">
+                                                            2
+                                                        </PaginationLink>
+                                                    </PaginationItem>
+                                                    <PaginationItem>
+                                                        <PaginationLink href="#">
+                                                            3
+                                                        </PaginationLink>
+                                                    </PaginationItem>
+                                                    <PaginationItem>
+                                                        <PaginationLink next href="#"/>
+                                                    </PaginationItem>
+                                                    <PaginationItem>
+                                                        <PaginationLink last href="#"/>
+                                                    </PaginationItem>
+                                                </Pagination>
+                                                <ReactTable
+                                                    data={data}
+                                                    columns={columns}
+                                                    minRows={2}
+                                                    className="-striped -highlight is-bordered"
+                                                />
+                                            </div>
+                                        </div>
+                                        : null
+                                    }
+                                </div>
+                            </div>
+                        </Card>
                     </div>
                 </div>
             </div>
