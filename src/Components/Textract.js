@@ -1,5 +1,6 @@
 import React, {Component} from "react"
 import ReactTable from 'react-table'
+import Fuse from 'fuse.js'
 import "react-table/react-table.css"
 import {Card, CardBody, CardFooter, Pagination, PaginationItem, PaginationLink, Spinner} from 'reactstrap';
 import axios from 'axios';
@@ -9,8 +10,16 @@ const S3BUCKET= "munivisor-docs-dev"
 const TABS = [
     {name: "row-text", label: "Raw Text"},
     {name: "tables", label: "Tables"},
-]
+];
 // const fileType = ["jpeg", "jpg", "png"]
+const options = {
+    threshold: 0.3,
+    location: 0,
+    distance: 100,
+    maxPatternLength: 32,
+    minMatchCharLength: 1,
+    keys: []
+};
 
 export default class Textract extends Component {
     constructor(props) {
@@ -21,6 +30,8 @@ export default class Textract extends Component {
             isLoading: false,
             activeTab: "row-text",
             rawText: "lines",
+            searchRawText: "",
+            searchTableText: "",
             tableIndex: 0
         }
     }
@@ -163,16 +174,19 @@ export default class Textract extends Component {
 
     onChange = (e) => {
         this.setState({
-            [e.target.name]: e.target.value || "lines"
+            [e.target.name]: e.target.value
         })
     }
 
     render() {
-        const {file, rawText, selectedFile, activeTab, isLoading, errorValidFile, tables, lines, words, tableIndex} = this.state
+        const {file, rawText, selectedFile, searchTableText, searchRawText, activeTab, isLoading, errorValidFile, tables, tableIndex} = this.state
+        let {lines, words} = this.state
         const table = (tables && tables.length && tables[tableIndex]) || {}
         const tableCells = (tables && tables.length && tables[tableIndex].cells) || []
         const columns = []
-        const data = []
+        let data = []
+        options.keys = []
+
         for(let j = 1; j <= table.rows; j++){
             const cellObj = {}
             tableCells.forEach(cell => {
@@ -190,9 +204,37 @@ export default class Textract extends Component {
                 Header: header[`cell${i}`],
                 accessor: `cell${i}`,
             })
+            options.keys.push({
+                name: `cell${i}`,
+                weight: 0.3
+            })
         }
         if(data && data.length){
             data.splice(0,1)
+        }
+
+        if(activeTab === "row-text" && searchRawText){
+            options.keys = [{
+                name: "Text",
+                weight: 0.3
+            }]
+            console.log(options)
+            if(rawText === "lines" && searchRawText){
+                console.log(lines, options)
+                lines = new Fuse(lines, options)
+                lines = lines.search(searchRawText);
+            }
+            if(rawText === "words" && searchRawText){
+                console.log(words, options)
+                words = new Fuse(words, options)
+                words.search(searchRawText);
+            }
+        }
+
+        if(activeTab === "tables" && searchTableText){
+            console.log(data, options)
+            data = new Fuse(data, options)
+            data = data.search(searchTableText);
         }
 
         if(isLoading){
@@ -256,7 +298,7 @@ export default class Textract extends Component {
                                                         <i className="fas fa-search" />
                                                     </label>
                                                 </div>
-                                                <input type="text" aria-label="Search text" className="form-control" placeholder="Type here to search"/>
+                                                <input type="text" name="searchRawText" aria-label="Search text" className="form-control" placeholder="Type here to search" onChange={this.onChange}/>
                                             </div>
                                         </div>
                                         <div  className="col-sm-2 mt-2">
@@ -301,7 +343,7 @@ export default class Textract extends Component {
                                                                 <i className="fas fa-search" />
                                                             </label>
                                                         </div>
-                                                        <input type="text" aria-label="Search text" className="form-control" placeholder="Type here to search"/>
+                                                        <input type="text" name="searchTableText" aria-label="Search text" className="form-control" placeholder="Type here to search" onChange={this.onChange}/>
                                                     </div>
                                                 </div>
                                             </div>
