@@ -1,8 +1,7 @@
 import React, {Component} from "react"
 import ReactTable from 'react-table'
 import "react-table/react-table.css"
-import logo from './logo.svg';
-import {Card, CardImg, Input, Pagination, PaginationItem, PaginationLink} from 'reactstrap';
+import {Card, Pagination, PaginationItem, PaginationLink} from 'reactstrap';
 import axios from 'axios';
 
 const S3BUCKET= "munivisor-docs-dev"
@@ -13,32 +12,33 @@ export default class Table extends Component {
         this.state = {
             tableData: {},
             file: {},
+            selectedFile: {},
         }
     }
 
     getBase64 = (file) => {
         const reader = new FileReader();
-        debugger
         return new Promise((resolve, reject) => {
             reader.onerror = () => { reader.abort(); reject(new Error("Error parsing file"));}
+            reader.readAsDataURL(file);
             reader.onload = function () {
 
                 //This will result in an array that will be recognized by C#.NET WebApi as a byte[]
-                let bytes = Array.from(new Uint8Array(this.result));
+                // let bytes = Array.from(new Uint8Array(this.result));
 
                 //if you want the base64encoded file you would use the below line:
-                let base64StringFile = btoa(bytes.map((item) => String.fromCharCode(item)).join(""));
-
+                // let base64StringFile = btoa(bytes.map((item) => String.fromCharCode(item)).join(""));
+                console.log("base64String ==>", reader.result)
                 //Resolve the promise with your custom file structure
                 resolve({
-                    bytes: bytes,
-                    base64StringFile: base64StringFile,
+                    // bytes: bytes,
+                    base64StringFile: reader.result,
                     fileName: file.name,
                     fileType: file.type,
                     originalFile: file
                 });
             }
-            reader.readAsArrayBuffer(file);
+            // reader.readAsArrayBuffer(file);
         });
     }
 
@@ -66,7 +66,7 @@ export default class Table extends Component {
         const res = await this.getSignedUrl({  // eslint-disable-line
             opType,
             bucketName: S3BUCKET,
-            fileName: fileName,
+            fileName: `TEXTRACT/${fileName}`,
             options
         })
 
@@ -106,8 +106,9 @@ export default class Table extends Component {
         const params = {
             "Document":{
                 "S3Object":{
+                    // "Bytes": (base64Obj && base64Obj.base64StringFile) || ""
                     Bucket: S3BUCKET,
-                    Name: fileName
+                    Name: `TEXTRACT/${fileName}`
                 }
             },
             "FeatureTypes":[
@@ -134,20 +135,43 @@ export default class Table extends Component {
         // const buff = Buffer.from(base64Obj.base64StringFile, 'base64')
         // const uintArray = new Uint8Array(buff)
         // const buffer = await this.s2ab(file)
-        let fileName = file.name
-        const extnIdx = fileName.lastIndexOf(".")
-        if (extnIdx > -1) {
-            fileName = `${fileName.substr(
-                0,
-                extnIdx
-            )}_${new Date().getTime()}${fileName.substr(extnIdx)}`
+        if(file){
+            let fileName = file.name
+            const extnIdx = fileName.lastIndexOf(".")
+            if (extnIdx > -1) {
+                fileName = `${fileName.substr(
+                    0,
+                    extnIdx
+                )}_${new Date().getTime()}${fileName.substr(extnIdx)}`
+            }
+            this.uploadWithSignedUrl(file,  fileName)
         }
-        this.uploadWithSignedUrl(file,  fileName)
+    }
+
+    onSelect = (event) => {
+        this.setState({
+            selectedFile: (event.target.files && event.target.files[0]) || {}
+        })
+    }
+
+    onFileUpload = () => {
+        const {selectedFile} = this.state
+        if(selectedFile){
+            let fileName = selectedFile.name
+            const extnIdx = fileName.lastIndexOf(".")
+            if (extnIdx > -1) {
+                fileName = `${fileName.substr(
+                    0,
+                    extnIdx
+                )}_${new Date().getTime()}${fileName.substr(extnIdx)}`
+            }
+            this.uploadWithSignedUrl(selectedFile,  fileName)
+        }
     }
 
     render() {
         console.log("tableData", this.state.tableData)
-        const {file} = this.state
+        const {file, selectedFile} = this.state
         const data = [{
             name: 'Tanner Linsley',
             age: 1,
@@ -186,57 +210,64 @@ export default class Table extends Component {
 
 
         return (
-            <div>
-                <div className="container">
-                    <div className="row">
-                        <div className="col-sm-1"/>
-
-                        <div className="col-sm-10">
-                            <Card body>
-                                {  file && file.base64StringFile ?
-                                    <CardImg top width="50%" height="50%%" src={(file && file.base64StringFile && `data:image/png;base64,${file.base64StringFile}`) || ""} alt="Card image cap"/>
-                                    : null
-                                }
-                                <Input type="file" onChange={this.onFileSelect} name="file"/>
-                            </Card>
-                            <div>&nbsp;
-                                <Pagination size="sm" aria-label="Page navigation example">
-                                    <PaginationItem>
-                                        <PaginationLink first href="#"/>
-                                    </PaginationItem>
-                                    <PaginationItem>
-                                        <PaginationLink previous href="#"/>
-                                    </PaginationItem>
-                                    <PaginationItem>
-                                        <PaginationLink href="#">
-                                            1
-                                        </PaginationLink>
-                                    </PaginationItem>
-                                    <PaginationItem>
-                                        <PaginationLink href="#">
-                                            2
-                                        </PaginationLink>
-                                    </PaginationItem>
-                                    <PaginationItem>
-                                        <PaginationLink href="#">
-                                            3
-                                        </PaginationLink>
-                                    </PaginationItem>
-                                    <PaginationItem>
-                                        <PaginationLink next href="#"/>
-                                    </PaginationItem>
-                                    <PaginationItem>
-                                        <PaginationLink last href="#"/>
-                                    </PaginationItem>
-                                </Pagination>
+            <div className="flud-container" style={{overflow: "hidden"}}>
+                <div className="row p-5">
+                    <div className="col-sm-6">
+                        <Card body>
+                            <div className="input-group mb-3">
+                                <div className="custom-file">
+                                    <input type="file" className="custom-file-input" id="inputGroupFile02" onChange={this.onSelect} />
+                                    <label className="custom-file-label" htmlFor="inputGroupFile02" aria-describedby="inputGroupFileAddon02">{selectedFile.name}</label>
+                                </div>
+                                <div className="input-group-append">
+                                    <button className="btn btn-outline-secondary" type="button" onClick={this.onFileUpload} >Upload</button>
+                                </div>
                             </div>
-                            <ReactTable
-                                data={data}
-                                columns={columns}
-                                minRows={2}
-                                className="-striped -highlight is-bordered"
-                            /></div>
-                        <div className="col-sm-1"/>
+                            {  file && file.base64StringFile ?
+                                <div>
+                                    <img className="img-fluid img-thumbnail" style={{height: "auto",width: "auto"}} src={(file && file.base64StringFile) || ""} alt="Card image cap"/>
+                                </div>
+                                : null
+                            }
+                            {/* <Input type="file" onChange={this.onFileSelect} name="file"/> */}
+                        </Card>
+                    </div>
+                    <div className="col-sm-6">
+                        <Pagination size="sm" aria-label="Page navigation example">
+                            <PaginationItem>
+                                <PaginationLink first href="#"/>
+                            </PaginationItem>
+                            <PaginationItem>
+                                <PaginationLink previous href="#"/>
+                            </PaginationItem>
+                            <PaginationItem>
+                                <PaginationLink href="#">
+                                    1
+                                </PaginationLink>
+                            </PaginationItem>
+                            <PaginationItem>
+                                <PaginationLink href="#">
+                                    2
+                                </PaginationLink>
+                            </PaginationItem>
+                            <PaginationItem>
+                                <PaginationLink href="#">
+                                    3
+                                </PaginationLink>
+                            </PaginationItem>
+                            <PaginationItem>
+                                <PaginationLink next href="#"/>
+                            </PaginationItem>
+                            <PaginationItem>
+                                <PaginationLink last href="#"/>
+                            </PaginationItem>
+                        </Pagination>
+                        <ReactTable
+                            data={data}
+                            columns={columns}
+                            minRows={2}
+                            className="-striped -highlight is-bordered"
+                        />
                     </div>
                 </div>
             </div>
