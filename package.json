@@ -11,6 +11,7 @@
     "dotenv": "^8.0.0",
     "express": "^4.16.4",
     "fs": "^0.0.1-security",
+    "fuse.js": "^3.4.4",
     "mongoose": "^5.5.6",
     "multer": "^1.4.1",
     "react": "^16.8.6",

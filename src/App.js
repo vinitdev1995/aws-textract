@@ -1,12 +1,12 @@
 import React from 'react';
-import Table from "./table";
+import Textract from "./Components/Textract";
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.css';
 
 function App() {
   return (
     <div className="App">
-      <Table/>
+      <Textract/>
     </div>
   );
 }

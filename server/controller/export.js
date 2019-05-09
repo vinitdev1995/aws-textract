@@ -43,6 +43,45 @@ const s3 = new AWS.S3({
 }
  */
 
+const blockExtract = (tableData) => {
+    let blocksKeyObj = {}
+    tableData.Blocks.forEach(data => {
+        blocksKeyObj = {
+            ...blocksKeyObj,
+            [data.Id]: data
+        }
+    })
+    const tables = tableData.Blocks.filter(b => b.BlockType === "TABLE")
+    const lines = tableData.Blocks.filter(b => b.BlockType === "LINE")
+    const words = tableData.Blocks.filter(b => b.BlockType === "WORD")
+    tables.forEach(table => {
+        table.cells = []
+        table.Relationships.forEach(cells => {
+            if(cells && cells.Ids && cells.Ids.length){
+                table.cells = cells.Ids.map(id => blocksKeyObj[id])
+            }
+        })
+
+        table.cells.forEach(cell => {
+            if(cell && cell.Relationships){
+                cell.Relationships.forEach(words => {
+                    cell.words = words.Ids.map(id => blocksKeyObj[id].Text)
+                    cell.cellText = cell.words.join(" ")
+                })
+            }
+        })
+
+        table.cols = table.cells.reduce((prev, current) => (prev.ColumnIndex > current.ColumnIndex) ? prev.ColumnIndex : current.ColumnIndex)
+        table.rows = table.cells.reduce((prev, current) => (prev.RowIndex > current.RowIndex) ? prev.RowIndex : current.RowIndex)
+    })
+    console.log(tables)
+    return {
+        tables,
+        lines,
+        words
+    }
+}
+
 module.exports.getAwsTextract = function(req,res){
     try{
         const params = req.body
@@ -63,7 +102,8 @@ module.exports.getAwsTextract = function(req,res){
                 console.log(err, err.stack); // an error occurred
                 res.status(400).json({done: false, err, message: "No results, We can’t find any text. Please try another document."})
             } else{
-                res.send({done: true, data}); // successful response
+                const blocks = blockExtract(data)
+                res.send({done: true, blocks}); // successful response
             }
         });
     }catch(e){
