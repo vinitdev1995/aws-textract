@@ -12,7 +12,7 @@ export default class Table extends Component {
         this.state = {
             tableData: {},
             file: {},
-            selectedFile: {},
+            selectedFile: null,
         }
     }
 
@@ -121,7 +121,7 @@ export default class Table extends Component {
             .then(response => {
                 this.setState({
                     tableData: (response && response.data && response.data.data) || {},
-                    file: base64Obj,
+                    file: base64Obj
                 })
             })
             .catch(error => {
@@ -150,7 +150,7 @@ export default class Table extends Component {
 
     onSelect = (event) => {
         this.setState({
-            selectedFile: (event.target.files && event.target.files[0]) || {}
+            selectedFile: (event.target.files && event.target.files[0]) || null
         })
     }
 
@@ -217,7 +217,7 @@ export default class Table extends Component {
                             <div className="input-group mb-3">
                                 <div className="custom-file">
                                     <input type="file" className="custom-file-input" id="inputGroupFile02" onChange={this.onSelect} />
-                                    <label className="custom-file-label" htmlFor="inputGroupFile02" aria-describedby="inputGroupFileAddon02">{selectedFile.name}</label>
+                                    <label className="custom-file-label" htmlFor="inputGroupFile02" aria-describedby="inputGroupFileAddon02">{(selectedFile && selectedFile.name) || "Choose File"}</label>
                                 </div>
                                 <div className="input-group-append">
                                     <button className="btn btn-outline-secondary" type="button" onClick={this.onFileUpload} >Upload</button>
