@@ -19,7 +19,8 @@ export default class Table extends Component {
             file: {},
             selectedFile: null,
             isLoading: false,
-            activeTab: "row-text"
+            activeTab: "row-text",
+            tableIndex: 0
         }
     }
 
@@ -193,11 +194,17 @@ export default class Table extends Component {
         })
     }
 
+    onPageChange = (i) =>{
+        this.setState({
+            tableIndex: i || 0
+        })
+    }
+
     render() {
         console.log("tableData", this.state.tableData)
-        const {file,selectedFile, activeTab, isLoading, errorValidFile, tables, lines, words} = this.state
-        const table = (tables && tables.length && tables[0]) || {}
-        const tableCells = (tables && tables.length && tables[0].cells) || []
+        const {file,selectedFile, activeTab, isLoading, errorValidFile, tables, lines, words, tableIndex} = this.state
+        const table = (tables && tables.length && tables[tableIndex]) || {}
+        const tableCells = (tables && tables.length && tables[tableIndex].cells) || []
         const columns = []
         const data = []
 
@@ -279,35 +286,24 @@ export default class Table extends Component {
                                     { columns ?
                                         <div className="row p-2">
                                             <div className="col-sm-12 mt-2">
+                                                {tables && tables.length &&
                                                 <Pagination size="sm" aria-label="Page navigation example">
                                                     <PaginationItem>
-                                                        <PaginationLink first href="#"/>
+                                                        <PaginationLink disabled={tableIndex === 0} previous onClick={() => this.onPageChange(tableIndex-1)}/>
                                                     </PaginationItem>
+                                                    {
+                                                        tables.map((obj, i) => {
+                                                            return (
+                                                                <PaginationItem active={tableIndex === i} key={i} onClick={() => this.onPageChange(i)}>
+                                                                    <PaginationLink>{i + 1}</PaginationLink>
+                                                                </PaginationItem>
+                                                            )
+                                                        })
+                                                    }
                                                     <PaginationItem>
-                                                        <PaginationLink previous href="#"/>
+                                                        <PaginationLink disabled={tableIndex === tables.length-1} next onClick={() => this.onPageChange(tableIndex+1)}/>
                                                     </PaginationItem>
-                                                    <PaginationItem>
-                                                        <PaginationLink href="#">
-                                                            1
-                                                        </PaginationLink>
-                                                    </PaginationItem>
-                                                    <PaginationItem>
-                                                        <PaginationLink href="#">
-                                                            2
-                                                        </PaginationLink>
-                                                    </PaginationItem>
-                                                    <PaginationItem>
-                                                        <PaginationLink href="#">
-                                                            3
-                                                        </PaginationLink>
-                                                    </PaginationItem>
-                                                    <PaginationItem>
-                                                        <PaginationLink next href="#"/>
-                                                    </PaginationItem>
-                                                    <PaginationItem>
-                                                        <PaginationLink last href="#"/>
-                                                    </PaginationItem>
-                                                </Pagination>
+                                                </Pagination>}
                                                 <ReactTable
                                                     data={data}
                                                     columns={columns}
