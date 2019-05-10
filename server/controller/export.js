@@ -45,6 +45,7 @@ const s3 = new AWS.S3({
 
 const blockExtract = (tableData) => {
     let blocksKeyObj = {}
+    let formFields = {}
     tableData.Blocks.forEach(data => {
         blocksKeyObj = {
             ...blocksKeyObj,
@@ -54,6 +55,7 @@ const blockExtract = (tableData) => {
     const tables = tableData.Blocks.filter(b => b.BlockType === "TABLE")
     const lines = tableData.Blocks.filter(b => b.BlockType === "LINE")
     const words = tableData.Blocks.filter(b => b.BlockType === "WORD")
+    const forms = tableData.Blocks.filter(b => b.BlockType === "KEY_VALUE_SET" && b.EntityTypes && b.EntityTypes.toString() === "KEY" )
     tables.forEach(table => {
         table.cells = []
         table.Relationships.forEach(cells => {
@@ -74,11 +76,36 @@ const blockExtract = (tableData) => {
         table.cols = table.cells.reduce((prev, current) => (prev.ColumnIndex > current.ColumnIndex) ? prev.ColumnIndex : current.ColumnIndex)
         table.rows = table.cells.reduce((prev, current) => (prev.RowIndex > current.RowIndex) ? prev.RowIndex : current.RowIndex)
     })
+
+    forms.forEach(form => {
+        if(form && form.Relationships){
+            let value = form.Relationships.find(rel => rel.Type === "VALUE")
+            let key = form.Relationships.find(rel => rel.Type === "CHILD")
+            if(key){
+                key = key.Ids.map(id => blocksKeyObj[id].Text)
+                key = key.join(" ")
+            }
+            if(value){
+                value.Ids.forEach(id => {
+                    blocksKeyObj[id].Relationships.forEach(rel => {
+                        console.log("value",  rel)
+                        value = rel.Ids.map(id => blocksKeyObj[id].Text)
+                    })
+                })
+                value = value.join(" ")
+            }
+            formFields = {
+                ...formFields,
+                [key]: value
+            }
+        }
+    })
     console.log(tables)
     return {
         tables,
         lines,
-        words
+        words,
+        formFields
     }
 }
 
