@@ -8,11 +8,13 @@ import Header from "./SubComponents/Header";
 import RawText from "./SubComponents/RawText";
 import TablesText from "./SubComponents/TablesText";
 import UploadDocument from "./SubComponents/UploadDocument";
+import Forms from "./SubComponents/Forms";
 
 const S3BUCKET= "munivisor-docs-dev"
 
 const TABS = [
     {name: "row-text", label: "Raw Text"},
+    {name: "forms", label: "Forms"},
     {name: "tables", label: "Tables"},
 ];
 // const fileType = ["jpeg", "jpg", "png"]
@@ -35,8 +37,14 @@ export default class Textract extends Component {
             activeTab: "row-text",
             rawText: "lines",
             searchRawText: "",
+            searchForms: "",
             searchTableText: "",
-            tableIndex: 0
+            errorValidFile: "",
+            tableIndex: 0,
+            formFields: [],
+            lines: [],
+            words: [],
+            tables: []
         }
     }
 
@@ -86,7 +94,7 @@ export default class Textract extends Component {
         })
 
         const xhr = new XMLHttpRequest()
-        xhr.open("PUT", res.data.url, true)
+        xhr.open("PUT", (res && res.data && res.data.url) || "", true)
         xhr.setRequestHeader("Content-Type", file.type)
         if (tags) {
             console.log("No tagging required any more")
@@ -123,12 +131,15 @@ export default class Textract extends Component {
                 this.setState({
                     ...res,
                     file: base64Obj,
+                    errorValidFile: "",
                     isLoading: false
                 }/* ,()=> this.blockExtract() */)
             }).catch(error => {
-            this.setState({
-                isLoading: false
-            })
+                this.setState({
+                    isLoading: false,
+                    errorValidFile: "Your document must be a .jpeg or .png. It must be no larger than 5MB.",
+                    selectedFile: null
+                })
                 console.log(error);
             })
     }
@@ -186,8 +197,8 @@ export default class Textract extends Component {
     }
 
     render() {
-        const {file, rawText, selectedFile, searchTableText, searchRawText, activeTab, isLoading, errorValidFile, tables, tableIndex} = this.state
-        let {lines, words} = this.state
+        const {file, rawText, selectedFile, searchTableText, searchForms, searchRawText, activeTab, isLoading, errorValidFile, tables, tableIndex} = this.state
+        let {lines, words, formFields} = this.state
         const table = (tables && tables.length && tables[tableIndex]) || {}
         const tableCells = (tables && tables.length && tables[tableIndex].cells) || []
         const columns = []
@@ -238,6 +249,19 @@ export default class Textract extends Component {
             }
         }
 
+        if(activeTab === "forms" && searchForms){
+            console.log(data, options)
+            options.keys = [{
+                name: "key",
+                weight: 0.3
+            },{
+                name: "value",
+                weight: 0.7
+            }]
+            formFields = new Fuse(formFields, options)
+            formFields = formFields.search(searchForms);
+        }
+
         if(activeTab === "tables" && searchTableText){
             console.log(data, options)
             data = new Fuse(data, options)
@@ -279,13 +303,21 @@ export default class Textract extends Component {
                                        activeTab={activeTab}
                                        onChange={this.onChange}
                                        rawText={rawText}
+                                       searchText={searchRawText}
                                        lines={lines}
                                        words={words}
                                    />
+                                    <Forms
+                                        activeTab={activeTab}
+                                        onChange={this.onChange}
+                                        searchText={searchForms}
+                                        forms={formFields}
+                                    />
                                     <TablesText
                                         activeTab={activeTab}
                                         columns={columns}
                                         onChange={this.onChange}
+                                        searchText={searchTableText}
                                         tables={tables}
                                         tableIndex={tableIndex}
                                         onPageChange={this.onPageChange}

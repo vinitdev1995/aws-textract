@@ -45,7 +45,7 @@ const s3 = new AWS.S3({
 
 const blockExtract = (tableData) => {
     let blocksKeyObj = {}
-    let formFields = {}
+    let formFields = []
     tableData.Blocks.forEach(data => {
         blocksKeyObj = {
             ...blocksKeyObj,
@@ -68,7 +68,7 @@ const blockExtract = (tableData) => {
             if(cell && cell.Relationships){
                 cell.Relationships.forEach(words => {
                     cell.words = words.Ids.map(id => blocksKeyObj[id].Text)
-                    cell.cellText = cell.words.join(" ")
+                    cell.cellText = value = (cell.words && Array.isArray(cell.words) && cell.words.join(" ")) || ""
                 })
             }
         })
@@ -87,17 +87,16 @@ const blockExtract = (tableData) => {
             }
             if(value){
                 value.Ids.forEach(id => {
-                    blocksKeyObj[id].Relationships.forEach(rel => {
-                        console.log("value",  rel)
-                        value = rel.Ids.map(id => blocksKeyObj[id].Text)
-                    })
+                    if(blocksKeyObj[id] && blocksKeyObj[id].Relationships){
+                        blocksKeyObj[id].Relationships.forEach(rel => {
+                            console.log("value",  rel)
+                            value = rel.Ids.map(id => blocksKeyObj[id].Text)
+                        })
+                    }
                 })
-                value = value.join(" ")
+                value = (value && Array.isArray(value) && value.join(" ")) || ""
             }
-            formFields = {
-                ...formFields,
-                [key]: value
-            }
+            formFields.push({Id: form.Id, key, value})
         }
     })
     console.log(tables)

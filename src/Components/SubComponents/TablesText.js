@@ -2,7 +2,7 @@ import React from "react"
 import {Pagination, PaginationItem, PaginationLink} from "reactstrap";
 import ReactTable from "react-table";
 
-const TablesText = ({activeTab, columns, onChange, tables, tableIndex, onPageChange, data}) => {
+const TablesText = ({activeTab, columns, searchText, onChange, tables, tableIndex, onPageChange, data}) => {
     return (
         <div className={`tab-pane fade ${activeTab === "tables" ? "show active" : ""}`}>
             {columns && columns.length ?
@@ -18,7 +18,7 @@ const TablesText = ({activeTab, columns, onChange, tables, tableIndex, onPageCha
                                 <input type="text" name="searchTableText"
                                        aria-label="Search text" className="form-control"
                                        placeholder="Type here to search"
-                                       onChange={onChange}/>
+                                       value={searchText} onChange={onChange}/>
                             </div>
                         </div>
                     </div>

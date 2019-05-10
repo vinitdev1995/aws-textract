@@ -1,6 +1,6 @@
 import React from "react"
 
-const RawText = ({activeTab, onChange, rawText, lines, words}) => {
+const RawText = ({activeTab, onChange, searchText, rawText, lines, words}) => {
     return (
         <div className={`tab-pane fade ${activeTab === "row-text" ? "show active" : ""}`}>
             <div className="row p-2">
@@ -13,7 +13,7 @@ const RawText = ({activeTab, onChange, rawText, lines, words}) => {
                         </div>
                         <input type="text" name="searchRawText" aria-label="Search text"
                                className="form-control" placeholder="Type here to search"
-                               onChange={onChange}/>
+                               value={searchText} onChange={onChange}/>
                     </div>
                 </div>
                 <div className="col-sm-2 mt-2">
