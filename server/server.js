@@ -6,6 +6,9 @@ require("dotenv").config()
 
 require('./model/config');
 const routes = require('./route/route');
+
+
+/*
 const mongoose = require('mongoose');
 mongoose.connect(process.env.DB_URL);
 
@@ -26,6 +29,20 @@ db.once('open',function(){
         const port = server.address().port;
         console.log("Example app listening at http://%s:%s", host, port);
     });
+});
+*/
+
+app.use(cors());
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
+
+app.use(express.static('public'));
+app.use('/',routes);
+
+const server = app.listen(8000,function(){
+    const host =  server.address().address;
+    const port = server.address().port;
+    console.log("Example app listening at http://%s:%s", host, port);
 });
 
 
