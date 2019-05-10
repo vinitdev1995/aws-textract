@@ -1,9 +1,10 @@
 import React, {Component} from "react"
 import ReactTable from 'react-table'
 import Fuse from 'fuse.js'
-import "react-table/react-table.css"
-import {Card, CardBody, CardFooter, Pagination, PaginationItem, PaginationLink, Spinner} from 'reactstrap';
 import axios from 'axios';
+import {Card, CardBody, CardFooter, Pagination, PaginationItem, PaginationLink, Spinner} from 'reactstrap';
+import Loader from "./Loader"
+import "react-table/react-table.css"
 
 const S3BUCKET= "munivisor-docs-dev"
 
@@ -182,7 +183,7 @@ export default class Textract extends Component {
         const {file, rawText, selectedFile, searchTableText, searchRawText, activeTab, isLoading, errorValidFile, tables, tableIndex} = this.state
         let {lines, words} = this.state
         const table = (tables && tables.length && tables[tableIndex]) || {}
-        const tableCells = (tables && tables.length && tables[tableIndex].cells) || []
+        const tableCells = (tables && tables.length && tables[tableIndex] && tables[tableIndex].cells) || []
         const columns = []
         let data = []
         options.keys = []
@@ -237,12 +238,9 @@ export default class Textract extends Component {
             data = data.search(searchTableText);
         }
 
-        if(isLoading){
-          return <Spinner style={{ width: '3rem', height: '3rem' }} type="grow" />
-        }
-
         return (
             <div className="flud-container pt-3 pl-5 pr-5" style={{overflow: "hidden"}}>
+                {isLoading ?  <Loader /> : null}
                 <h3 className="text-center text-primary pb-5">Otaras Textract Engine</h3>
                 <div className="row">
                     <div className="col-sm-6">

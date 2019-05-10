@@ -56,3 +56,12 @@
   text-align: justify;
   text-justify: inter-word
 }
+
+.ReactTable .rt-table {
+  font-size: 12px;
+}
+
+.card-body {
+  overflow: auto;
+  max-height: 75vh;
+}
