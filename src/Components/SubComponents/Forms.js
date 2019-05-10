@@ -23,7 +23,7 @@ const Forms = ({activeTab, onChange, searchText, forms}) => {
                             <div  key={form.Id} className="col-sm-6">
                                 <div className="form-group">
                                     <label className="float-left">{form.key}</label>
-                                    <textarea className="form-control" rows="3" disabled>{form.value}</textarea>
+                                    <textarea className="form-control" value={form.value || ""} rows="3" disabled />
                                 </div>
                             </div>
 

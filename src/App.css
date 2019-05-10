@@ -36,8 +36,8 @@
   padding: 7px;
   border-width: 1px;
   border-style: solid;
-  color: #fff;
-  background-color: #6c757da3;
+  /* color: #fff; */
+  background-color: #e9ecef;
   font-size: 0.875rem;
   display: inline-block;
   font-weight: 400;
@@ -49,6 +49,7 @@
 }
 
 .tag:hover {
+  color: #fff;
   background-color: #6c757ded;
 }
 

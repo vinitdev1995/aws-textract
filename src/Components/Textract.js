@@ -136,8 +136,13 @@ export default class Textract extends Component {
                 }/* ,()=> this.blockExtract() */)
             }).catch(error => {
                 this.setState({
+                    formFields: [],
+                    lines: [],
+                    words: [],
+                    tables: [],
+                    file: {},
                     isLoading: false,
-                    errorValidFile: "Your document must be a .jpeg or .png. It must be no larger than 5MB.",
+                    errorValidFile: "We can’t find any text. Please try another document.",
                     selectedFile: null
                 })
                 console.log(error);
