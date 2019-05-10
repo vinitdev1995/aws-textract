@@ -1,12 +1,11 @@
 import React, {Component} from "react"
-import ReactTable from 'react-table'
 import Fuse from 'fuse.js'
 import axios from 'axios';
 import { Card } from 'reactstrap';
 import Loader from "./SubComponents/Loader"
 import "react-table/react-table.css"
 import Header from "./SubComponents/Header";
-import RowText from "./SubComponents/RowText";
+import RawText from "./SubComponents/RawText";
 import TablesText from "./SubComponents/TablesText";
 import UploadDocument from "./SubComponents/UploadDocument";
 
@@ -258,7 +257,7 @@ export default class Textract extends Component {
                            errorValidFile={errorValidFile}
                            file={file}
                        />
-                        <div className="col-sm-6">
+                        <div className="col-xl-6">
                             <Card className="p-2">
                                 <nav>
                                     <div className="nav nav-tabs" id="nav-tab" role="tablist">
@@ -276,7 +275,7 @@ export default class Textract extends Component {
                                     </div>
                                 </nav>
                                 <div className="tab-content" id="nav-tabContent">
-                                   <RowText
+                                   <RawText
                                        activeTab={activeTab}
                                        onChange={this.onChange}
                                        rawText={rawText}

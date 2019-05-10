@@ -1,6 +1,6 @@
 import React from "react"
 
-const RowText = ({activeTab, onChange, rawText, lines, words}) => {
+const RawText = ({activeTab, onChange, rawText, lines, words}) => {
     return (
         <div className={`tab-pane fade ${activeTab === "row-text" ? "show active" : ""}`}>
             <div className="row p-2">
@@ -52,4 +52,4 @@ const RowText = ({activeTab, onChange, rawText, lines, words}) => {
         </div>
     )
 }
-export default RowText
+export default RawText

@@ -3,7 +3,7 @@ import {Card, CardBody, CardFooter} from "reactstrap";
 
 const UploadDocument = ({onSelect, selectedFile, onFileUpload, errorValidFile, file}) => {
     return (
-        <div className="col-sm-6">
+        <div className="col-xl-6">
             <Card>
                 <CardBody>
                     <div className="input-group mb-3">
@@ -31,8 +31,8 @@ const UploadDocument = ({onSelect, selectedFile, onFileUpload, errorValidFile, f
                 </CardBody>
                 <CardFooter className="text-left">
                     <p className="card-text">
-                        <small className="text-muted"> Note: Your document must be a .jpeg or .png. It
-                            must be no larger than 5MB. Reset document
+                        <small className="text-muted">
+                            Note: Your document must be a .jpeg or .png. It must be no larger than 5MB.
                         </small>
                     </p>
                 </CardFooter>

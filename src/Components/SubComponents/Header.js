@@ -10,10 +10,8 @@ const Header = () => (
             </NavbarBrand>
             <Collapse navbar>
                 <Nav className="ml-auto m-auto" navbar>
-                    <NavItem>
-                        <NavLink className="text-uppercase"
-                                 href="/components/"
-                                 style={{fontSize: "23px", color: "#f3a435"}}>Otaras Textract Engine</NavLink>
+                    <NavItem className="text-uppercase" style={{fontSize: "23px", color: "#f3a435"}}>
+                        Otaras Textract Engine
                     </NavItem>
                 </Nav>
             </Collapse>
