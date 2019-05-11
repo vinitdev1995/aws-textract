@@ -3,15 +3,14 @@ import {Card, CardBody, CardFooter} from "reactstrap";
 
 const UploadDocument = ({onSelect, selectedFile, onFileUpload, errorValidFile, file}) => {
     return (
-        <div className="col-xl-6">
+        <div className="col-xl-6 mt-2">
             <Card>
                 <CardBody>
                     <div className="input-group mb-3">
                         <div className="custom-file">
                             <input type="file" accept=".jpeg,.jpg,.png" className="custom-file-input"
                                    id="inputGroupFile02" onChange={onSelect}/>
-                            <label className="custom-file-label" htmlFor="inputGroupFile02"
-                                   aria-describedby="inputGroupFileAddon02">{(selectedFile && selectedFile.name) || "Choose File"}</label>
+                            <label className="custom-file-label" style={{whiteSpace: "nowrap",overflow: "hidden",textOverflow: "ellipsis"}}>{(selectedFile && selectedFile.name) || "Choose File"}</label>
                         </div>
                         <div className="input-group-append">
                             <button className="btn btn-outline-secondary" type="button"

@@ -267,7 +267,7 @@ export default class Textract extends Component {
         return (
             <div>
                 <Header/>
-                <div className="flud-container pt-3 pl-5 pr-5" style={{overflow: "hidden"}}>
+                <div className="flud-container pt-3 pl-3 pr-3" style={{overflow: "hidden"}}>
                     {isLoading ? <Loader/> : null}
                     <div className="row">
                        <UploadDocument
@@ -277,7 +277,7 @@ export default class Textract extends Component {
                            errorValidFile={errorValidFile}
                            file={file}
                        />
-                        <div className="col-xl-6">
+                        <div className="col-xl-6 mt-2">
                             <Card className="p-2">
                                 <nav>
                                     <div className="nav nav-tabs" id="nav-tab" role="tablist">
@@ -295,14 +295,14 @@ export default class Textract extends Component {
                                     </div>
                                 </nav>
                                 <div className="tab-content" id="nav-tabContent">
-                                   <RawText
-                                       activeTab={activeTab}
-                                       onChange={this.onChange}
-                                       rawText={rawText}
-                                       searchText={searchRawText}
-                                       lines={lines}
-                                       words={words}
-                                   />
+                                    <RawText
+                                        activeTab={activeTab}
+                                        onChange={this.onChange}
+                                        rawText={rawText}
+                                        searchText={searchRawText}
+                                        lines={lines}
+                                        words={words}
+                                    />
                                     <Forms
                                         activeTab={activeTab}
                                         onChange={this.onChange}
