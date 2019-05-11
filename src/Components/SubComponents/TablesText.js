@@ -5,7 +5,6 @@ import ReactTable from "react-table";
 const TablesText = ({activeTab, columns, searchText, onChange, tables, tableIndex, onPageChange, data}) => {
     return (
         <div className={`tab-pane fade ${activeTab === "tables" ? "show active" : ""}`}>
-            {columns && columns.length ?
                 <div>
                     <div className="row p-2">
                         <div className="col-sm-12 mt-2">
@@ -22,6 +21,7 @@ const TablesText = ({activeTab, columns, searchText, onChange, tables, tableInde
                             </div>
                         </div>
                     </div>
+                    {columns && columns.length ?
                     <div className="row p-2">
                         <div className="col-sm-12 mt-2">
                             {tables && tables.length &&
@@ -54,10 +54,9 @@ const TablesText = ({activeTab, columns, searchText, onChange, tables, tableInde
                                 className="-striped -highlight is-bordered"
                             />
                         </div>
-                    </div>
+                    </div> : <p className="text-left"> No results, We can’t find any text. Please try another document. </p>
+                    }
                 </div>
-                : <p> No results, We can’t find any text. Please try another document. </p>
-            }
         </div>
     )
 }

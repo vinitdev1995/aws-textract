@@ -1,6 +1,5 @@
 import React, {Component} from "react"
 import Fuse from 'fuse.js'
-import axios from 'axios';
 import { Card } from 'reactstrap';
 import Loader from "./SubComponents/Loader"
 import "react-table/react-table.css"
@@ -9,6 +8,7 @@ import RawText from "./SubComponents/RawText";
 import TablesText from "./SubComponents/TablesText";
 import UploadDocument from "./SubComponents/UploadDocument";
 import Forms from "./SubComponents/Forms";
+import {getSignedUrlInfo, onUploadDocument} from "../Actions";
 
 const S3BUCKET= "munivisor-docs-dev"
 
@@ -66,16 +66,8 @@ export default class Textract extends Component {
     }
 
     getSignedUrl = async (payload) => {
-        try {
-            const res = await axios.post(`http://localhost:8000/get-signed-url`, payload)
-            if(res && res.status === 200){
-                return res
-            }
-            return null
-        } catch (err) {
-            console.log("err in getSignedUrl ", err.message)
-            return null
-        }
+        const res = await getSignedUrlInfo(payload)
+        return res
     }
 
     uploadWithSignedUrl = async (file, fileName) => {
@@ -125,28 +117,27 @@ export default class Textract extends Component {
                 "FORMS"
             ]
         }
-        axios.post('http://localhost:8000/getAwsTextract', params)
-            .then(response => {
-                const res = (response && response.data && response.data.blocks) || {}
-                this.setState({
-                    ...res,
-                    file: base64Obj,
-                    errorValidFile: "",
-                    isLoading: false
-                }/* ,()=> this.blockExtract() */)
-            }).catch(error => {
-                this.setState({
-                    formFields: [],
-                    lines: [],
-                    words: [],
-                    tables: [],
-                    file: {},
-                    isLoading: false,
-                    errorValidFile: "We can’t find any text. Please try another document.",
-                    selectedFile: null
-                })
-                console.log(error);
+        const response = await onUploadDocument(params)
+        if(response){
+            const res = (response && response.data && response.data.blocks) || {}
+            this.setState({
+                ...res,
+                file: base64Obj,
+                errorValidFile: "",
+                isLoading: false
+            }/* ,()=> this.blockExtract() */)
+        }else {
+            this.setState({
+                formFields: [],
+                lines: [],
+                words: [],
+                tables: [],
+                file: {},
+                isLoading: false,
+                errorValidFile: "We can’t find any text. Please try another document.",
+                selectedFile: null
             })
+        }
     }
 
     onSelect = (event) => {
