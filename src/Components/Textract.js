@@ -214,7 +214,7 @@ export default class Textract extends Component {
         for(let i = 1; i <= table.cols; i++){
             const header = (data && data.length && data[0]) || {}
             columns.push({
-                id: header[`cell${i}`],
+                id: `cell${i}`,
                 Header: header[`cell${i}`],
                 accessor: `cell${i}`,
             })
