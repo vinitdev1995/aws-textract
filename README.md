@@ -3,8 +3,9 @@
 
 ## Install
 
-Create `.env` file and below parameters value: 
+**Setting up env**
 
+Create `.env` file 
 JWTSECRET=<YOUR SECRET KEY>
 S3ACCESSKEYID=<S3 ACCESS KEY ID>
 S3SECRETKEY=<S3 SECRET KEY>
@@ -13,11 +14,6 @@ SESREGION=<REGION>
 
 ```console
 $ npm install
-
-Start Client 
- $ npm start
- 
-Start Server 
- $ npm server 
-
+$ npm start
+$ npm server 
 ```
