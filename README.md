@@ -3,6 +3,10 @@
 
 ## Install
 
+## Amazon Textract Code Example
+This repository contains example code snippets showing how Amazon Textract and other AWS services can be used to get insights from documents.
+This demo developed in reactJs and nodeJs.
+
 **Setting up env**
 
 Create `.env` file 
